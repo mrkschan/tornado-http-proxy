@@ -4,13 +4,20 @@ import os
 from tornado.log import enable_pretty_logging
 from tornado.ioloop import IOLoop
 from tornado.options import define, parse_command_line, options
-from tornado.web import Application, RequestHandler, url
+from tornado.web import Application, RequestHandler, HTTPError, url
 
 import requests
 
 
 class ProxyHandler(RequestHandler):
+    def initialize(self):
+        self.logger = logging.getLogger('tornado.general')
+
     def get(self, url):
+        # Ignore non-proxy requests.
+        if not url.startswith('http://'):
+            raise HTTPError(404)
+
         r = requests.get(url)
 
         status = r.status_code
